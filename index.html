@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWM13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Path Converter (Win/Mac/NAS) / 路径转换器</title>
+    <style>
+        /* --- Base & Container (Glassmorphism & Silver Tones - Compact) --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Microsoft YaHei', 'SimSun';
+            line-height: 1.5; /* Slightly tighter line height */
+            padding: 10px; /* Reduced padding */
+            margin: 0;
+            min-height: 100vh; /* Full viewport height */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items to the top */
+            /* No top padding needed if padding is uniform 10px */
+            /* Background for Glassmorphism - subtle gradient */
+            background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
+            color: #222; /* Darker text for better contrast */
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.6); /* Semi-transparent white */
+            border-radius: 16px; /* More rounded corners */
+            padding: 15px; /* Reduced padding */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); /* Softer, larger shadow */
+            backdrop-filter: blur(10px); /* Glassmorphism blur effect */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border */
+            max-width: 1000px; /* Keep wider max-width */
+            width: 98%; /* Use percentage for better responsiveness */
+            display: flex;
+            flex-direction: column;
+            /* Remove min-height from container, let content define height */
+            /* min-height: calc(100vh - 40px); */
+        }
+        h1 {
+            color: #444; /* Slightly lighter heading color */
+            text-align: center;
+            margin: 0 0 15px 0; /* Reduced bottom margin */
+            font-size: 1.7em; /* Slightly smaller heading */
+            line-height: 1.3;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle text shadow */
+        }
+        label, .options-label-main {
+            display: block;
+            margin-bottom: 4px; /* Reduced margin */
+            font-weight: bold;
+            color: #333; /* Dark grey */
+            font-size: 0.95em; /* Slightly smaller font */
+        }
+         .options-label-main {
+             margin-bottom: 6px; /* Reduced margin */
+             font-size: 0.9em; /* Slightly smaller */
+         }
+        textarea { /* Applies to both input and output initially */
+            width: 98%; /* Keep 98% */
+            min-height: 90px; /* Reduced min height */
+            height: 110px; /* Reduced initial height */
+            padding: 8px; /* Reduced padding */
+            border: 1px solid rgba(204, 204, 204, 0.5); /* Semi-transparent border */
+            border-radius: 8px; /* Keep rounded corners */
+            margin-bottom: 8px; /* Reduced margin */
+            font-family: 'Consolas', 'Courier New', monospace, 'SimSun';
+            font-size: 0.9em; /* Slightly smaller font */
+            resize: vertical;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.08); /* Softer inset shadow */
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        textarea:focus {
+            border-color: #007bff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 8px rgba(0, 123, 255, 0.2);
+            outline: none;
+        }
+
+        /* --- Options Area (Inner Glass Layer - Compact) --- */
+        .options {
+            margin-bottom: 12px; /* Reduced margin */
+            padding: 12px; /* Reduced padding */
+            border: 1px solid rgba(238, 238, 238, 0.5); /* Subtle border */
+            border-radius: 12px; /* Keep rounded corners */
+            background-color: rgba(255, 255, 255, 0.5); /* More transparent white than container */
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inset shadow */
+        }
+        /* --- Mac Output Toggle (Compact) --- */
+        .mac-toggle {
+            margin-bottom: 8px; /* Reduced margin */
+            padding-bottom: 6px; /* Reduced padding */
+            border-bottom: 1px solid rgba(238, 238, 238, 0.5); /* Subtle border */
+        }
+        .mac-toggle label {
+            display: inline-block;
+            font-weight: 500;
+            color: #0056b3; /* Slightly darker blue */
+            cursor: pointer;
+            font-size: 0.9em; /* Reduced font size */
+             transition: color 0.2s ease;
+        }
+         .mac-toggle label:hover {
+              color: #007bff;
+         }
+        .mac-toggle input[type="checkbox"] {
+             margin-right: 5px; /* Reduced margin */
+             vertical-align: middle;
+             cursor: pointer;
+             transform: scale(1.05); /* Keep scale */
+             accent-color: #007bff; /* Blue accent */
+        }
+        /* --- Options Grid (Compact) --- */
+        .options-grid {
+            display: grid;
+            /* Keep min column width, adjust gap slightly if needed */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 6px 10px; /* Reduced gap */
+        }
+        .options-grid label {
+            margin-bottom: 0;
+            font-weight: normal;
+            cursor: pointer;
+            color: #444; /* Dark grey */
+            font-size: 0.85em; /* Reduced font size */
+            line-height: 1.4; /* Keep line height */
+            padding: 2px 0; /* Reduced padding */
+            white-space: normal;
+            display: flex;
+            align-items: flex-start;
+        }
+        .options-grid label .label-text {
+             display: inline-block;
+             vertical-align: top;
+             padding-top: 1px; /* Fine-tune alignment */
+             flex-grow: 1; /* Allow text to take space */
+        }
+         .options-grid label:hover .label-text {
+              color: #007bff; /* Highlight text on hover */
+         }
+        .options-grid input[type="radio"] {
+             margin-right: 5px; /* Reduced margin */
+             transform: scale(1.05); /* Keep scale */
+             margin-top: 3px; /* Align radio button better with text */
+             flex-shrink: 0;
+              accent-color: #28a745; /* Green accent */
+        }
+        .force-to-nas-label {
+             grid-column: 1 / -1; /* Span all columns */
+             border-top: 1px dashed rgba(204, 204, 204, 0.7); /* Softer dashed border */
+             padding-top: 8px; /* Reduced padding */
+             margin-top: 8px; /* Reduced margin */
+             color: #17a2b8;
+             font-weight: 500;
+             align-items: center;
+        }
+        .force-to-nas-label .label-text { padding-top: 0;}
+        .force-to-nas-label input[type="radio"] { margin-top: 0;}
+        /* Style for the "New" indicator within the label-text span */
+        .label-text .new-indicator {
+            color: #dc3545; /* Red */
+            font-size: 0.7em; /* Keep size */
+            font-weight: bold;
+            margin-left: 4px; /* Reduced margin */
+            vertical-align: super;
+        }
+
+
+        /* --- Buttons & Output Area (Compact) --- */
+        .action-button {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 12px; /* Reduced padding */
+            color: white;
+            border: none;
+            border-radius: 8px; /* Keep rounded corners */
+            cursor: pointer;
+            font-size: 0.95em; /* Reduced font size */
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease; /* Added transform */
+            text-align: center;
+            line-height: 1.3;
+            margin-top: 8px; /* Reduced margin */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow */
+        }
+         .action-button:active {
+             transform: translateY(1px); /* Press down effect */
+         }
+
+        .button-convert-main {
+            background: linear-gradient(180deg, #28a745 0%, #218838 100%); /* Subtle gradient */
+            box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3); /* Reduced shadow */
+        }
+        .button-convert-main:hover {
+            background: linear-gradient(180deg, #218838 0%, #1e7e34 100%);
+            box-shadow: 0 3px 6px rgba(33, 136, 56, 0.4); /* Reduced shadow */
+        }
+        .button-convert-mac {
+             background: linear-gradient(180deg, #007bff 0%, #0056b3 100%); /* Subtle gradient */
+             box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3); /* Reduced shadow */
+             /* display: none; */ /* Managed by JS */
+        }
+        .button-convert-mac:hover {
+              background: linear-gradient(180deg, #0056b3 0%, #004085 100%);
+              box-shadow: 0 3px 6px rgba(0, 86, 179, 0.4); /* Reduced shadow */
+        }
+        /* Style for the Copy button (Compact) */
+        .button-copy {
+            display: flex;
+            width: auto;
+            align-self: flex-end;
+            background: linear-gradient(180deg, #6c757d 0%, #5a6268 100%); /* Subtle gradient */
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Reduced shadow */
+            margin-top: 4px; /* Reduced margin */
+            padding: 4px 8px; /* Reduced padding */
+            font-size: 0.85em; /* Reduced font size */
+            border-radius: 6px; /* Keep rounded */
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+        }
+        .button-copy:hover {
+            background: linear-gradient(180deg, #5a6268 0%, #4e545a 100%);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+         .button-copy:active {
+             transform: translateY(1px);
+         }
+
+        .action-button i {
+             margin-right: 6px; /* Reduced margin */
+             font-size: 1em; /* Keep size */
+             flex-shrink: 0;
+        }
+         .button-copy i {
+             margin-right: 4px; /* Reduced margin */
+             font-size: 0.85em; /* Keep size */
+             flex-shrink: 0;
+         }
+
+
+        #outputLabel {
+            margin-top: 12px; /* Reduced margin */
+            margin-bottom: 3px; /* Reduced margin below */
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em; /* Keep size */
+            transition: color 0.3s ease, background-color 0.3s ease;
+            padding: 3px 6px; /* Keep padding */
+            border-radius: 4px;
+            min-height: 1.6em; /* Keep height */
+            display: flex; /* Use flex for status colors */
+            align-items: center;
+        }
+         /* Status colors with background */
+         #outputLabel.status-info { color: #004085; background-color: #cce5ff; border: 1px solid #b8daff;}
+         #outputLabel.status-success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb;}
+         #outputLabel.status-error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb;}
+
+        #outputPaths {
+            margin-top: 0; /* Removed top margin, label adds space */
+            /* *** MODIFIED: Set explicit height and min-height to match input textarea *** */
+            height: 110px;
+            min-height: 90px;
+            /* REMOVED: flex-grow: 1; */ /* Prevent it from expanding vertically */
+            background-color: rgba(240, 240, 240, 0.7); /* Semi-transparent grey */
+            color: #333;
+            border: 1px solid rgba(204, 204, 204, 0.5); /* Semi-transparent border */
+            border-radius: 8px; /* Matching container radius */
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+            padding: 8px; /* Match input padding */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #outputPaths:focus {
+             border-color: #007bff;
+             box-shadow: inset 0 1px 2px rgba(0,0,0,0.08), 0 0 8px rgba(0, 123, 255, 0.2);
+             outline: none;
+        }
+
+         small {
+            display: block;
+            margin-top: 2px; /* Reduced margin */
+            font-size: 0.75em; /* Reduced font size */
+            color: #5a6268; /* Darker grey */
+         }
+
+         /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                align-items: flex-start; /* Keep top alignment */
+                padding: 8px; /* Reduced padding on very small screens */
+            }
+            .container {
+                padding: 12px; /* Reduced padding on small screens */
+                width: 100%; /* Full width on very small screens */
+                max-width: none; /* Remove max-width restriction on small screens */
+                /* min-height removed to allow content to dictate height */
+                /* min-height: calc(100vh - 20px); */
+            }
+            h1 {
+                 font-size: 1.5em;
+                 margin-bottom: 12px;
+            }
+             label, .options-label-main {
+                 margin-bottom: 3px;
+                 font-size: 0.9em;
+             }
+             .options-label-main {
+                  margin-bottom: 5px;
+                  font-size: 0.85em;
+             }
+            .options-grid {
+                grid-template-columns: 1fr; /* Stack columns on small screens */
+                 gap: 5px 0; /* Reduced gap */
+            }
+            .options-grid label {
+                 font-size: 0.8em;
+                 padding: 4px 0; /* More vertical space when stacked */
+            }
+             .options-grid input[type="radio"] {
+                  margin-right: 4px;
+                  transform: scale(1);
+                  margin-top: 2px;
+             }
+             .label-text .new-indicator {
+                  font-size: 0.65em;
+                  margin-left: 3px;
+             }
+            .options {
+                 padding: 8px;
+                 margin-bottom: 8px;
+                 border-radius: 10px;
+            }
+             .mac-toggle {
+                 margin-bottom: 6px;
+                 padding-bottom: 5px;
+             }
+              .mac-toggle label {
+                  font-size: 0.85em;
+              }
+               .mac-toggle input[type="checkbox"] {
+                   margin-right: 4px;
+                   transform: scale(1);
+               }
+            textarea, #outputPaths { /* Apply height/min-height adjustments */
+                 padding: 6px;
+                 font-size: 0.8em;
+                 min-height: 70px; /* Reduced min height */
+                 height: 90px; /* Reduced height */
+                 margin-bottom: 6px;
+                 border-radius: 6px;
+            }
+             #outputLabel {
+                 margin-top: 8px;
+                 margin-bottom: 2px;
+                 font-size: 0.85em;
+                 padding: 2px 4px;
+                 min-height: 1.4em;
+             }
+            .action-button {
+                 padding: 7px 9px;
+                 font-size: 0.9em;
+                 margin-top: 6px;
+                 border-radius: 6px;
+            }
+             .action-button i {
+                 margin-right: 5px;
+                 font-size: 0.9em;
+             }
+             .button-copy {
+                 padding: 3px 6px;
+                 font-size: 0.75em;
+                 margin-top: 3px;
+             }
+              .button-copy i {
+                 margin-right: 3px;
+                 font-size: 0.75em;
+             }
+              small {
+                 font-size: 0.7em;
+                 margin-top: 1px;
+                 color: #6c757d; /* Keep slightly lighter on very small screens */
+              }
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Path Converter (Win/Mac/NAS) / 路径转换器</h1>
+
+    <label for="inputPaths">Input Paths: / 输入路径:</label>
+    <textarea id="inputPaths"
+              placeholder="Paste Windows (\\...), macOS (smb://...) or NAS (/) paths.
+在此处粘贴 Windows (\\...), macOS (smb://...) 或 NAS (/) 路径。"></textarea>
+
+    <div class="options">
+        <span class="options-label-main">Mode / Target / Output Format: / 模式 / 目标 / 输出格式:</span>
+
+        <div class="mac-toggle">
+            <label for="macOutputCheckbox">
+                <input type="checkbox" id="macOutputCheckbox" onchange="updateServerLabels(); toggleMacButtonVisibility();"> Mac Output Format / Mac 输出格式
+            </label>
+        </div>
+
+        <div class="options-grid">
+            <label id="label_sh">
+                <input type="radio" name="conversion_option" value="192.168.17.2"
+                       data-base-label-en="SH1"
+                       data-url="https://116.236.204.91:5656/" checked>
+                <span class="label-text"></span> </label>
+            <label id="label_sh2">
+                <input type="radio" name="conversion_option" value="192.168.17.240"
+                       data-base-label-en="SH2"
+                       data-url="https://116.236.204.90:5656/">
+                <span class="label-text"></span>
+            </label>
+             <label id="label_sh3">
+                <input type="radio" name="conversion_option" value="192.168.17.140"
+                       data-base-label-en="SH3"
+                       data-url="https://116.236.204.91:5001/">
+                <span class="label-text"></span> </label>
+
+            <label id="label_gz">
+                <input type="radio" name="conversion_option" value="192.168.8.220"
+                       data-base-label-en="GZ1"
+                       data-url="http://112.94.14.25:5000/">
+                <span class="label-text"></span>
+            </label>
+            <label id="label_gz2">
+                <input type="radio" name="conversion_option" value="192.168.8.230"
+                       data-base-label-en="GZ2"
+                       data-url="https://112.94.14.25:5656/">
+                <span class="label-text"></span>
+            </label>
+             <label id="label_gz3">
+                <input type="radio" name="conversion_option" value="192.168.160.160"
+                       data-base-label-en="GZ3"
+                       data-url="https://112.94.14.25:5002/">
+                <span class="label-text"></span> </label>
+            
+            <label id="label_id">
+                <input type="radio" name="conversion_option" value="172.16.61.170"
+                       data-base-label-en="ID"
+                       data-url="https://in-nas.yintaerp.com:5001/">
+                <span class="label-text"></span> </label>
+
+
+            <label class="force-to-nas-label">
+                <input type="radio" name="conversion_option" value="force_to_nas">
+                <span class="label-text">Convert ANY Server Path → NAS Address (Win/Mac → NAS) / 转换任意服务器路径 → NAS 地址 (Win/Mac → NAS)</span>
+            </label>
+        </div>
+    </div>
+
+    <button onclick="convertPaths()" class="action-button button-convert-main">
+        <i class="fas fa-sync-alt"></i> <span>Convert / 转换</span>
+    </button>
+
+     <button onclick="convertExplicitlyToMac()" class="action-button button-convert-mac" id="convertToMacButton" style="display: none;">
+         <i class="fab fa-apple"></i> <span>Convert Input → Mac Format (using selected target) / 转换输入 → Mac 格式 (使用选定目标)</span>
+     </button>
+
+
+    <label for="outputPaths" id="outputLabel">Output Paths: / 输出路径:</label>
+    <textarea id="outputPaths" readonly
+              placeholder="Converted paths will appear here... / 转换后的路径将显示在此处..."></textarea>
+
+    <button onclick="copyOutput()" class="button-copy" id="copyOutputButton">
+        <i class="fas fa-copy"></i>
+        <span>Copy Output / 一键复制</span>
+    </button>
+
+</div>
+
+<script>
+    // Status text
+    const statusText = {
+         en: {
+            empty: "Input is empty.",
+            convertingNASToWin: "Converting: NAS → Windows Path",
+            convertingNASToMac: "Converting: NAS → macOS Path",
+            convertingServerToNAS: "Converting: Server Path → NAS Address",
+            convertingInputToMac: "Converting: Input → Explicit macOS Format", // Changed format
+            target: "Target",
+            complete: "Conversion complete.",
+            processed: "Processed",
+            paths: "path(s).",
+            selectedServerToNAS: "(Forced Server → NAS via selection)",
+            autoDetectedServerToNAS: "(Auto-Detected Server Path → NAS)",
+            errorNoSelection: "Error: No conversion option selected.",
+            errorNoTargetIP: "Error: Select a Target Server (SH, GZ...) for this conversion.",
+            noteServerDetected: "*Note: Input detected as Server Path, converting to NAS despite target selection.",
+            revertingLabel: "Output Paths:",
+            // Added for Copy Button
+            copySuccess: "Copied to clipboard!",
+            copyEmpty: "Output is empty, nothing to copy.",
+            copyError: "Failed to copy! Please copy manually.",
+         },
+        zh: {
+            empty: "输入为空。",
+            convertingNASToWin: "转换: NAS 地址 → Windows 路径",
+            convertingNASToMac: "转换: NAS 地址 → macOS 路径",
+            convertingServerToNAS: "转换: 服务器路径 → NAS 地址",
+            convertingInputToMac: "转换: 输入 → 指定 macOS 格式",
+            target: "目标",
+            complete: "转换完成。",
+            processed: "已处理",
+            paths: "条路径。",
+            selectedServerToNAS: "(通过选项强制 服务器 → NAS)",
+            autoDetectedServerToNAS: "(自动检测 服务器路径 → NAS)",
+            errorNoSelection: "错误：未选择转换选项。",
+            errorNoTargetIP: "错误：此转换需要选定目标服务器 (SH, GZ...)",
+            noteServerDetected: "*注意：检测到输入为服务器路径，将转为NAS地址（忽略目标选项）。",
+            revertingLabel: "输出路径:",
+            copySuccess: "已复制到剪贴板！",
+            copyEmpty: "输出为空，无内容可复制。",
+            copyError: "复制失败！请手动复制。",
+         }
+    };
+
+    let statusTimeout = null;
+
+    // --- Helper: Display Status on Output Label ---
+    function showStatus(messageEn, messageZh, statusType = 'info', duration = 3000) {
+        const outputLabel = document.getElementById('outputLabel');
+        if (statusTimeout) { clearTimeout(statusTimeout); statusTimeout = null; }
+        outputLabel.innerHTML = `${messageEn} / ${messageZh}`;
+        outputLabel.className = `status-${statusType}`;
+        if (duration > 0) {
+            statusTimeout = setTimeout(() => {
+                outputLabel.textContent = `${statusText.en.revertingLabel} / ${statusText.zh.revertingLabel}`;
+                outputLabel.className = '';
+                statusTimeout = null;
+            }, duration);
+        }
+    }
+
+    // --- Helper: Strip Server Prefix (Win/Mac) and leading/trailing slashes ---
+    function stripServerPrefix(line) {
+        const ipPrefixWinPattern = /^\\\\(\d{1,3}(\.\d{1,3}){3})\\/;
+        const ipPrefixMacPattern = /^smb:\/\/(\d{1,3}(\.\d{1,3}){3})\//i;
+        let processedLine = line.trim(); // Trim first
+        let match = processedLine.match(ipPrefixWinPattern);
+        if (match) {
+            processedLine = processedLine.substring(match[0].length);
+        } else {
+            match = processedLine.match(ipPrefixMacPattern);
+            if (match) {
+                processedLine = processedLine.substring(match[0].length);
+            }
+        }
+        // Also remove leading/trailing slashes/backslashes after stripping prefix
+        return processedLine.replace(/^[\\/]+|[\\/]+$/g, '');
+    }
+
+    // --- Helper: Replace the first segment of a path if it matches ---
+    function replaceFirstSegment(path, oldSegment, newSegment) {
+        if (!path) return path;
+        // Split by slashes/backslashes, keep empty strings if they separate segments (e.g., for //)
+        const segments = path.split(/[\\/]/);
+
+        // Find the first *non-empty* segment's index
+        let firstSegmentIndex = -1;
+        for(let i = 0; i < segments.length; i++) {
+            if (segments[i].length > 0) {
+                firstSegmentIndex = i;
+                break;
+            }
+        }
+
+        if (firstSegmentIndex !== -1 && segments[firstSegmentIndex].toLowerCase() === oldSegment.toLowerCase()) {
+             segments[firstSegmentIndex] = newSegment;
+        }
+
+        // Rejoin using forward slashes for consistency in base path representation
+        let rejoinedPath = segments.join('/');
+        // Clean up potential multiple slashes
+        while(rejoinedPath.includes('//')) {
+             rejoinedPath = rejoinedPath.replace('//', '/');
+        }
+         // Ensure it doesn't start with just '//' if the original path was like '\\IP\'
+         // Add a check to avoid breaking actual double slashes if they exist later
+         if (rejoinedPath.startsWith('//') && !(path.startsWith('//') || path.toLowerCase().startsWith('smb://'))) {
+              rejoinedPath = rejoinedPath.substring(1);
+         }
+         // Ensure a leading slash is added if the original had one and it was removed by split/join/cleanup
+         if (!rejoinedPath.startsWith('/') && (path.startsWith('/') || path.startsWith('\\'))) {
+             rejoinedPath = '/' + rejoinedPath;
+         }
+
+
+        // Remove trailing slash if not root '/'
+         if (rejoinedPath.length > 1 && rejoinedPath.endsWith('/')) {
+              rejoinedPath = rejoinedPath.slice(0, -1);
+         }
+
+
+        return rejoinedPath;
+    }
+
+
+     // --- Helper: Format to Mac Path ---
+    function formatToMacPath(basePath, targetIp) {
+        // Ensure base path uses forward slashes and clean duplicates (should be mostly done by replaceFirstSegment/strip)
+        let cleanBasePath = basePath.replace(/\\/g, '/');
+         while (cleanBasePath.includes('//')) {
+            cleanBasePath = cleanBasePath.replace('//', '/');
+        }
+        // Remove leading/trailing slashes just in case (stripServerPrefix handles this, but belt and suspenders)
+        cleanBasePath = cleanBasePath.replace(/^\/+|\/+$/g, '');
+        return `smb://${targetIp}/${cleanBasePath || ''}`; // Handle empty base path gracefully
+    }
+
+
+    // --- Helper Function: NAS -> Server Path (Win OR Mac) ---
+    function performNASToServerConversion(lines, targetIp, outputFormat = 'win') {
+         let outputLines = [];
+         // Updated SH3 IP constant used for the special folder replacement logic
+         const SH3_IP_FOR_SPECIAL_FOLDER = '192.168.17.140'; // This is the IP that now triggers the 平面设计组 -> 视觉中心 swap
+
+         lines.forEach(line => {
+             let basePath = stripServerPrefix(line); // Get the base path relative to the share/volume root
+
+             // Apply SH3 specific segment replacement IF the *target IP for conversion* is the new SH3 IP
+             if (targetIp === SH3_IP_FOR_SPECIAL_FOLDER) {
+                 basePath = replaceFirstSegment(basePath, '平面设计组', '视觉中心');
+             }
+             // Note: No need to replace 视觉中心 -> 平面设计组 here, as the input is assumed NAS format or non-SH3 server format
+
+             let processedLine;
+             if (outputFormat === 'mac') {
+                 processedLine = formatToMacPath(basePath, targetIp);
+             } else { // Windows format
+                let winPath = basePath.replace(/\//g, '\\'); // Convert to backslashes
+                // Ensure single backslashes
+                while(winPath.includes('\\\\')) {
+                    winPath = winPath.replace('\\\\', '\\');
+                }
+                // Handle root case, ensure leading backslash unless empty
+                 if (winPath.length > 0 && !winPath.startsWith('\\')) {
+                     winPath = '\\' + winPath;
+                 } else if (winPath === '' && line.trim() !== '/' && line.trim() !== '\\') {
+                      // If base path is truly empty after stripping/replacing,
+                      // Windows path should just be \\IP\ (handled below by concatenation)
+                 }
+
+
+                processedLine = `\\\\${targetIp}${winPath}`; // Combine IP and path
+                 // Handle case where winPath is empty, resulting in \\IP\
+                 if (processedLine === `\\\\${targetIp}`) processedLine += '\\';
+
+             }
+             outputLines.push(processedLine);
+         });
+        return outputLines;
+    }
+
+     // --- Helper Function: Server Path (Win/Mac) -> NAS ---
+     function performServerPathToNASConversion(lines) {
+         let outputLines = [];
+         // Note: The folder replacement logic (视觉中心 -> 平面设计组) for Server -> NAS conversion
+         // was previously removed as per prior requests. It is still removed here.
+         lines.forEach(line => {
+            let basePath = stripServerPrefix(line); // Get the base path relative to the share/volume root
+
+            // Ensure NAS format (leading slash, forward slashes, no trailing slash)
+            let nasPath = '/' + basePath.replace(/\\/g, '/'); // Start with '/', convert all slashes to forward
+
+            // Clean up potential multiple slashes (e.g., if basePath was empty or started with a slash before adding '/')
+            while (nasPath.includes('//')) {
+                 nasPath = nasPath.replace('//', '/');
+            }
+
+            // Remove trailing slash if not root '/'
+            if (nasPath.length > 1 && nasPath.endsWith('/')) {
+                 nasPath = nasPath.slice(0, -1);
+            }
+
+            // Handle empty path resulting in just '/'
+            outputLines.push(nasPath || '/');
+         });
+         return outputLines;
+     }
+
+
+    // --- Function to Update Server Radio Labels ---
+    function updateServerLabels() {
+        const isMacOutput = document.getElementById('macOutputCheckbox').checked;
+        // Add the new label IDs here - Order here doesn't matter for logic, only for CSS if it were used, but it's not.
+        const labelIds = ['label_sh', 'label_sh2', 'label_sh3', 'label_gz', 'label_gz2', 'label_gz3', 'label_id'];
+
+        labelIds.forEach(id => {
+            const labelElement = document.getElementById(id);
+            if (!labelElement) return; // Skip if element not found
+
+            const inputElement = labelElement.querySelector('input[type="radio"]');
+            // Select only the text span that will contain the main label text
+            const textSpan = labelElement.querySelector('.label-text');
+            if (!inputElement || !textSpan) return; // Skip if input or span not found
+
+            const baseEn = inputElement.dataset.baseLabelEn || '';
+            const url = inputElement.dataset.url || 'N/A';
+            const targetIp = inputElement.value || 'N/A'; // Get the IP from the updated value
+
+            // Determine the server path format based on checkbox
+            const serverPath = isMacOutput ? `smb://${targetIp}` : `\\\\${targetIp}`;
+
+            // Sanitize URL display just in case
+            const urlEscaped = url.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            // Construct the main path info string
+            // Label displays the URL and the IP from the radio button's value
+            const pathInfo = `(${urlEscaped} → ${serverPath})`;
+
+            // Construct the final label text including the base name and path info
+            let finalLabelTextHtml = `${baseEn} ${pathInfo}`; // Default construction
+
+            // Add "New" indicator for specific labels using innerHTML
+            if (id === 'label_sh3' || id === 'label_gz3' || id === 'label_id') {
+                // Insert the 'New' span after the base name but before the path info
+                 finalLabelTextHtml = `${baseEn} <span class="new-indicator">New</span> ${pathInfo}`;
+            }
+
+            // Set the innerHTML of the text span
+            textSpan.innerHTML = finalLabelTextHtml;
+        });
+    }
+
+    // --- Function to Toggle Explicit Mac Button Visibility ---
+    function toggleMacButtonVisibility() {
+        const isMacOutput = document.getElementById('macOutputCheckbox').checked;
+        const convertToMacButton = document.getElementById('convertToMacButton');
+        if (convertToMacButton) {
+            convertToMacButton.style.display = isMacOutput ? 'flex' : 'none';
+        }
+    }
+
+
+    // --- Main Conversion Function (for the green 'Convert' button) ---
+    function convertPaths() {
+        const inputTextArea = document.getElementById('inputPaths');
+        const outputTextArea = document.getElementById('outputPaths');
+        const outputLabel = document.getElementById('outputLabel');
+
+        // Reset status
+        outputLabel.textContent = `${statusText.en.revertingLabel} / ${statusText.zh.revertingLabel}`;
+        outputLabel.className = '';
+        if (statusTimeout) clearTimeout(statusTimeout);
+
+        const lines = inputTextArea.value.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        if (lines.length === 0) {
+            outputTextArea.value = '';
+            showStatus(statusText.en.empty, statusText.zh.empty, 'error');
+            return;
+        }
+
+        const selectedElement = document.querySelector('input[name="conversion_option"]:checked');
+        const selectedValue = selectedElement ? selectedElement.value : null;
+        const isMacOutputFormat = document.getElementById('macOutputCheckbox').checked;
+
+        let outputLines = [];
+        let statusHtmlEn = '';
+        let statusHtmlZh = '';
+        let noteHtmlEn = '';
+        let noteHtmlZh = '';
+        let success = false;
+
+        try {
+            if (!selectedValue) {
+                showStatus(statusText.en.errorNoSelection, statusText.zh.errorNoSelection, 'error');
+                return;
+            }
+
+            const firstLineTrimmed = lines[0].trim();
+            const detectedAsServerPath = /^\s*\\\\/.test(firstLineTrimmed) || /^\s*smb:\/\//i.test(firstLineTrimmed);
+            const targetBaseLabelEn = selectedValue === 'force_to_nas' ? 'N/A' : (selectedElement.dataset.baseLabelEn || `IP: ${selectedValue}`);
+            const targetIp = selectedValue !== 'force_to_nas' ? selectedValue : null; // Get target IP only if a server option is selected (not force_to_nas)
+
+            // --- Decision Logic ---
+            if (selectedValue === 'force_to_nas' || detectedAsServerPath) {
+                // User explicitly selected Server -> NAS OR Input detected as Server path
+                 statusHtmlEn = `${statusText.en.convertingServerToNAS} ${selectedValue === 'force_to_nas' ? statusText.en.selectedServerToNAS : statusText.en.autoDetectedServerToNAS}`;
+                 statusHtmlZh = `${statusText.zh.convertingServerToNAS} ${selectedValue === 'force_to_nas' ? statusText.zh.selectedServerToNAS : statusText.zh.autoDetectedServerToNAS}`;
+                 if (detectedAsServerPath && selectedValue !== 'force_to_nas') { // Only show note if auto-detected and not forced
+                      noteHtmlEn = `<small>${statusText.en.noteServerDetected}</small>`;
+                      noteHtmlZh = `<small>${statusText.zh.noteServerDetected}</small>`;
+                 }
+                outputLines = performServerPathToNASConversion(lines); // Server (Win/Mac) -> NAS conversion
+                success = true;
+
+            } else if (targetIp) {
+                // Input is likely NAS, convert to selected Server target (Win or Mac format)
+                if (isMacOutputFormat) {
+                    statusHtmlEn = `${statusText.en.convertingNASToMac} (${statusText.en.target}: ${targetBaseLabelEn})`;
+                    statusHtmlZh = `${statusText.zh.convertingNASToMac} (${statusText.zh.target}: ${targetBaseLabelEn})`;
+                    outputLines = performNASToServerConversion(lines, targetIp, 'mac'); // NAS -> Mac conversion
+                } else { // Default to Windows format
+                    statusHtmlEn = `${statusText.en.convertingNASToWin} (${statusText.en.target}: ${targetBaseLabelEn})`;
+                    statusHtmlZh = `${statusText.zh.convertingNASToWin} (${statusText.zh.target}: ${targetBaseLabelEn})`;
+                    outputLines = performNASToServerConversion(lines, targetIp, 'win'); // NAS -> Win conversion
+                }
+                success = true;
+            } else {
+                // Should not happen if selectedValue is checked and not 'force_to_nas', but as a fallback
+                 showStatus(statusText.en.errorNoSelection, statusText.zh.errorNoSelection, 'error');
+                 return;
+            }
+
+            // --- Final Output and Status ---
+            if (success) {
+                outputTextArea.value = outputLines.join('\n');
+                const processedCount = outputLines.length;
+                const finalStatusEn = `${statusHtmlEn} - ${statusText.en.complete} (${processedCount} ${statusText.en.paths})`;
+                const finalStatusZh = `${statusHtmlZh} - ${statusText.zh.complete} (${processedCount} ${statusText.zh.paths})`;
+                // Combine main status with note if present
+                showStatus(`${finalStatusEn}${noteHtmlEn ? '<br>' + noteHtmlEn : ''}`, `${finalStatusZh}${noteHtmlZh ? '<br>' + noteHtmlZh : ''}`, 'success', 4000);
+            }
+
+        } catch (error) {
+             console.error("Conversion Error:", error);
+             showStatus("Processing Error! Check Console.", "处理错误！请检查控制台。", 'error', 5000);
+        }
+    }
+
+
+     // --- Function for the Explicit Mac Conversion Button ---
+     function convertExplicitlyToMac() {
+        const inputTextArea = document.getElementById('inputPaths');
+        const outputTextArea = document.getElementById('outputPaths');
+        const outputLabel = document.getElementById('outputLabel');
+
+        // Reset status
+        outputLabel.textContent = `${statusText.en.revertingLabel} / ${statusText.zh.revertingLabel}`;
+        outputLabel.className = '';
+        if (statusTimeout) clearTimeout(statusTimeout);
+
+        const lines = inputTextArea.value.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        if (lines.length === 0) {
+            outputTextArea.value = '';
+            showStatus(statusText.en.empty, statusText.zh.empty, 'error');
+            return;
+        }
+
+        // Find selected TARGET IP (SH, GZ etc.) - This button requires one!
+        const selectedElement = document.querySelector('input[name="conversion_option"]:checked');
+        const selectedValue = selectedElement ? selectedElement.value : null;
+
+        // Check if a valid IP target is selected (not 'force_to_nas')
+        if (!selectedValue || selectedValue === 'force_to_nas') {
+             showStatus(statusText.en.errorNoTargetIP, statusText.zh.errorNoTargetIP, 'error');
+             return;
+        }
+
+        const targetIp = selectedValue; // Get targetIp from the selected radio button's value
+        // Updated SH3 IP constant used for the special folder replacement logic
+        const SH3_IP_FOR_SPECIAL_FOLDER = '192.168.17.140'; // This is the IP that now triggers the 平面设计组 -> 视觉中心 swap
+
+        const targetBaseLabelEn = selectedElement.dataset.baseLabelEn || `IP: ${targetIp}`;
+
+
+        let outputLines = [];
+        let success = false;
+
+        // Set status message for this specific action
+        let statusHtmlEn = `${statusText.en.convertingInputToMac} (${statusText.en.target}: ${targetBaseLabelEn})`;
+        let statusHtmlZh = `${statusText.zh.convertingInputToMac} (${statusText.zh.target}: ${targetBaseLabelEn})`;
+        showStatus(statusHtmlEn, statusHtmlZh, 'info', 0); // Show indefinitely until success/error
+
+        try {
+            lines.forEach(line => {
+                let basePath = stripServerPrefix(line); // Get base path by stripping any prefix
+
+                 // Apply SH3 specific segment replacement IF the *target IP for formatting* is the new SH3 IP
+                if (targetIp === SH3_IP_FOR_SPECIAL_FOLDER) {
+                    basePath = replaceFirstSegment(basePath, '平面设计组', '视觉中心');
+                }
+                 // Note: No need to replace 视觉中心 -> 平面设计组 here, as the target is Mac path, not NAS
+
+                const macPath = formatToMacPath(basePath, targetIp); // Format specifically to Mac path
+                outputLines.push(macPath);
+            });
+            success = true;
+
+        } catch (error) {
+             console.error("Explicit Mac Conversion Error:", error);
+             showStatus("Processing Error! Check Console.", "处理错误！请检查控制台。", 'error', 5000);
+        }
+
+        // Final Output and Status
+         if (success) {
+             outputTextArea.value = outputLines.join('\n');
+             const processedCount = outputLines.length;
+             statusHtmlEn += ` - ${statusText.en.complete} (${processedCount} ${statusText.en.paths})`;
+             statusHtmlZh += ` - ${statusText.zh.complete} (${processedCount} ${statusText.zh.paths})`;
+             showStatus(statusHtmlEn, statusHtmlZh, 'success', 4000); // Show final success
+         }
+     }
+
+     // --- Function to Copy Output Text ---
+     function copyOutput() {
+        const outputTextArea = document.getElementById('outputPaths');
+        const textToCopy = outputTextArea.value;
+
+        if (textToCopy.length === 0) {
+            showStatus(statusText.en.copyEmpty, statusText.zh.copyEmpty, 'error', 2000);
+            return;
+        }
+
+        // Use the modern Clipboard API
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                showStatus(statusText.en.copySuccess, statusText.zh.copySuccess, 'success', 2000);
+            })
+            .catch(err => {
+                console.error('Failed to copy text (Clipboard API): ', err);
+                // Fallback for environments where Clipboard API is not available or fails
+                try {
+                    // Select the text first for execCommand
+                    outputTextArea.select();
+                    outputTextArea.setSelectionRange(0, 99999); // For mobile devices
+                    document.execCommand('copy');
+                    showStatus(statusText.en.copySuccess + " (Fallback)", statusText.zh.copySuccess + " (备用)", 'success', 2000);
+                } catch (fallbackErr) {
+                    console.error('Fallback copy failed: ', fallbackErr);
+                    showStatus(statusText.en.copyError, statusText.zh.copyError, 'error', 5000);
+                }
+            });
+     }
+
+
+     // --- Initialize Labels & Button Visibility on Page Load ---
+     document.addEventListener('DOMContentLoaded', () => {
+         updateServerLabels();
+         toggleMacButtonVisibility(); // Ensure button visibility is correct on load
+     });
+
+</script>
+
+</body>
+</html>
